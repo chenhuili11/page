@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>111</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffd6e8 0%, #ffb3d9 50%, #ff9bc5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .initial-screen {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3);
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3);
+            max-width: 400px;
+            width: 100%;
+            display: none;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .heart {
+            font-size: 60px;
+            margin-bottom: 30px;
+            animation: heartBeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #ff1493;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #ff69b4;
+            margin-bottom: 50px;
+            opacity: 0.8;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 15px 40px;
+            font-family: inherit;
+        }
+
+        .reveal-btn {
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+        }
+
+        .reveal-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.6);
+        }
+
+        .reveal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .choice-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.6);
+        }
+
+        .choice-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeInModal 0.3s ease-out;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 25px;
+            max-width: 350px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 20, 147, 0.4);
+            animation: slideInModal 0.4s ease-out;
+        }
+
+        @keyframes slideInModal {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content .heart {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 18px;
+            color: #ff1493;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .modal-close-btn {
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            color: white;
+            padding: 12px 40px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .modal-close-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .modal-close-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一页：初始屏幕 -->
+    <div class="initial-screen" id="initialScreen">
+        <div class="heart">❓</div>
+        <h1>点击这里揭开秘密</h1>
+        <button class="reveal-btn" id="revealBtn">揭开</button>
+    </div>
+
+    <!-- 第二页：选择页面 -->
+    <div class="container" id="mainContainer">
+        <div class="heart">🤔</div>
+        <h1>你猜猜我可以知道你点了哪个不？</h1>
+        <div class="subtitle">每一个选择我都看在眼里</div>
+
+        <div class="button-container">
+            <button class="choice-btn" data-choice="健康" id="healthBtn">健康</button>
+            <button class="choice-btn" data-choice="快乐" id="happyBtn">快乐</button>
+            <button class="choice-btn" data-choice="平安" id="peaceBtn">平安</button>
+        </div>
+    </div>
+
+    <!-- 第三页：下班了吗 -->
+    <div class="container" id="thirdContainer">
+        <div class="heart">🌙</div>
+        <h1>下班了吗？</h1>
+        <div class="subtitle">终于可以休息一下啦～</div>
+
+        <div class="button-container">
+            <button class="choice-btn" data-answer="下了" id="leftBtn">下了</button>
+            <button class="choice-btn" data-answer="还没有" id="rightBtn">还没有</button>
+        </div>
+    </div>
+
+    <!-- 弹窗模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="heart">💡</div>
+            <p>没错，我知道了！</p>
+            <button class="modal-close-btn" id="closeModalBtn">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取所有 DOM 元素
+        const revealBtn = document.getElementById('revealBtn');
+        const initialScreen = document.getElementById('initialScreen');
+        const mainContainer = document.getElementById('mainContainer');
+        const thirdContainer = document.getElementById('thirdContainer');
+        const healthBtn = document.getElementById('healthBtn');
+        const happyBtn = document.getElementById('happyBtn');
+        const peaceBtn = document.getElementById('peaceBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const modal = document.getElementById('modal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // 页面加载时发送 page_view 事件
+        window.addEventListener('load', () => {
+            sendEvent('page_view', { path: window.location.pathname });
+        });
+
+        // 通用函数：发送事件到服务器
+        async function sendEvent(eventType, data = {}) {
+            try {
+                const payload = {
+                    event: eventType,
+                    timestamp: new Date().toISOString(),
+                    ...data
+                };
+                const response = await fetch('/event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error(`Failed to send ${eventType} event:`, error);
+            }
+        }
+
+        // 点击“揭开”按钮
+        revealBtn.addEventListener('click', () => {
+            initialScreen.style.display = 'none';
+            mainContainer.style.display = 'block';
+            sendEvent('reveal', { from_page: 'initial' });
+        });
+
+        // 为三个选择按钮添加点击事件
+        [healthBtn, happyBtn, peaceBtn].forEach(button => {
+            button.addEventListener('click', () => {
+                const choice = button.getAttribute('data-choice');
+                sendEvent('choice_made', { choice: choice });
+                modal.classList.add('show'); // 显示弹窗
+            });
+        });
+
+        // 点击“我知道了”：关闭弹窗，跳转到第三页
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+            mainContainer.style.display = 'none';
+            thirdContainer.style.display = 'block';
+            sendEvent('modal_closed', { next_page: 'after_work_question' });
+        });
+
+        // 点击遮罩关闭弹窗（可选）
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // 第三页按钮点击事件
+        [leftBtn, rightBtn].forEach(button => {
+            button.addEventListener('click', () => {
+                const answer = button.getAttribute('data-answer');
+                sendEvent('after_work_response', { response: answer });
+                alert(`你选择了：${answer} 😊`);
+                // 可选：几秒后回到首页
+                // setTimeout(() => { window.location.reload(); }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
