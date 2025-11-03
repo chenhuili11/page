@@ -256,8 +256,9 @@
                 // 可选：打印成功日志
                 // console.log(`✅ Sent: ${eventType}`);
             } catch (error) {
-                console.warn('⚠️ 无法连接到后台，请确保 Python 服务器正在运行！');
-            }
+        // 静默失败，不影响主流程
+                  console.debug(`📌 事件未送达: ${eventType}`);
+           }
         }
 
         // 获取所有 DOM 元素
