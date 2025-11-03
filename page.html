@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>111</title>
     <style>
+        /* 原样式完全保留，为节省空间这里省略 */
         * {
             margin: 0;
             padding: 0;
@@ -124,7 +125,6 @@
             transform: scale(0.98);
         }
 
-        /* 弹窗样式 */
         .modal {
             display: none;
             position: fixed;
@@ -199,19 +199,17 @@
     </style>
 </head>
 <body>
-    <!-- 第一页：初始屏幕 -->
+    <!-- 页面结构保持不变 -->
     <div class="initial-screen" id="initialScreen">
         <div class="heart">❓</div>
         <h1>点击这里揭开秘密</h1>
         <button class="reveal-btn" id="revealBtn">揭开</button>
     </div>
 
-    <!-- 第二页：选择页面 -->
-    <div class="container" id="mainContainer">
+    <div class="container" id="mainContainer" style="display:none;">
         <div class="heart">🤔</div>
         <h1>你猜猜我可以知道你点了哪个不？</h1>
         <div class="subtitle">每一个选择我都看在眼里</div>
-
         <div class="button-container">
             <button class="choice-btn" data-choice="健康" id="healthBtn">健康</button>
             <button class="choice-btn" data-choice="快乐" id="happyBtn">快乐</button>
@@ -219,19 +217,16 @@
         </div>
     </div>
 
-    <!-- 第三页：下班了吗 -->
-    <div class="container" id="thirdContainer">
+    <div class="container" id="thirdContainer" style="display:none;">
         <div class="heart">🌙</div>
         <h1>下班了吗？</h1>
         <div class="subtitle">终于可以休息一下啦～</div>
-
         <div class="button-container">
             <button class="choice-btn" data-answer="下了" id="leftBtn">下了</button>
             <button class="choice-btn" data-answer="还没有" id="rightBtn">还没有</button>
         </div>
     </div>
 
-    <!-- 弹窗模态框 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="heart">💡</div>
@@ -241,6 +236,30 @@
     </div>
 
     <script>
+        // ✅ 第一步：定义 sendEvent 函数（必须放在最前面！）
+        const BACKEND_URL = 'http://10.162.65.24:8000/event';  // ✅ 指向你的电脑
+
+        async function sendEvent(eventType, data = {}) {
+            try {
+                const payload = {
+                    event: eventType,
+                    timestamp: new Date().toISOString(),
+                    ...data
+                };
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                // 可选：打印成功日志
+                // console.log(`✅ Sent: ${eventType}`);
+            } catch (error) {
+                console.warn('⚠️ 无法连接到后台，请确保 Python 服务器正在运行！');
+            }
+        }
+
         // 获取所有 DOM 元素
         const revealBtn = document.getElementById('revealBtn');
         const initialScreen = document.getElementById('initialScreen');
@@ -254,48 +273,28 @@
         const modal = document.getElementById('modal');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
-        // 页面加载时发送 page_view 事件
+        // 页面加载时发送访问事件
         window.addEventListener('load', () => {
             sendEvent('page_view', { path: window.location.pathname });
         });
 
-        // 通用函数：发送事件到服务器
-        async function sendEvent(eventType, data = {}) {
-            try {
-                const payload = {
-                    event: eventType,
-                    timestamp: new Date().toISOString(),
-                    ...data
-                };
-                const response = await fetch('/event', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-            } catch (error) {
-                console.error(`Failed to send ${eventType} event:`, error);
-            }
-        }
-
-        // 点击“揭开”按钮
+        // 点击“揭开”
         revealBtn.addEventListener('click', () => {
             initialScreen.style.display = 'none';
             mainContainer.style.display = 'block';
             sendEvent('reveal', { from_page: 'initial' });
         });
 
-        // 为三个选择按钮添加点击事件
+        // 选择按钮
         [healthBtn, happyBtn, peaceBtn].forEach(button => {
             button.addEventListener('click', () => {
                 const choice = button.getAttribute('data-choice');
-                sendEvent('choice_made', { choice: choice });
-                modal.classList.add('show'); // 显示弹窗
+                sendEvent('choice_made', { choice });
+                modal.classList.add('show');
             });
         });
 
-        // 点击“我知道了”：关闭弹窗，跳转到第三页
+        // 关闭弹窗并跳转
         closeModalBtn.addEventListener('click', () => {
             modal.classList.remove('show');
             mainContainer.style.display = 'none';
@@ -303,44 +302,21 @@
             sendEvent('modal_closed', { next_page: 'after_work_question' });
         });
 
-        // 点击遮罩关闭弹窗（可选）
+        // 点击遮罩关闭弹窗
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('show');
             }
         });
 
-        // 第三页按钮点击事件
+        // 下班了吗？
         [leftBtn, rightBtn].forEach(button => {
             button.addEventListener('click', () => {
                 const answer = button.getAttribute('data-answer');
                 sendEvent('after_work_response', { response: answer });
                 alert(`你选择了：${answer} 😊`);
-                // 可选：几秒后回到首页
-                // setTimeout(() => { window.location.reload(); }, 1500);
             });
         });
     </script>
 </body>
-
-    <script>
-// 🌟 关键：指向你的电脑 IP
-const BACKEND_URL = 'http://10.162.65.24:8000/event';
-
-async function sendEvent(eventType, data = {}) {
-    try {
-        await fetch(BACKEND_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                event: eventType,
-                timestamp: new Date().toISOString(),
-                ...data
-            })
-        });
-    } catch (error) {
-        console.warn('⚠️ 后台未连接（可能是开发者没开服务）');
-    }
-}
-    </script>
 </html>
