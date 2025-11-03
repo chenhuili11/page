@@ -322,4 +322,25 @@
         });
     </script>
 </body>
+    <script>
+// 🌟 关键：指向你的电脑 IP
+const BACKEND_URL = 'http://10.162.65.24:8000/event';
+
+async function sendEvent(eventType, data = {}) {
+    try {
+        await fetch(BACKEND_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event: eventType,
+                timestamp: new Date().toISOString(),
+                ...data
+            })
+        });
+    } catch (error) {
+        console.warn('⚠️ 后台未连接（可能是开发者没开服务）');
+    }
+}
+</script>
+
 </html>
